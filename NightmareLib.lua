@@ -1,7 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY
-    Ready for GitHub upload
-    Discord tab hardcoded, Main/Visual/Misc dynamic
+    NIGHTMARE HUB LIBRARY (Fixed Toggle Button)
 ]]
 
 local NightmareHub = {}
@@ -10,8 +8,12 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- UI Variables
-local ScreenGui, MainFrame, ToggleButton, TabButtons, ScrollFrame
+-- UI Variables - Make them accessible
+local ScreenGui
+local MainFrame
+local ToggleButton
+local TabButtons = {}
+local ScrollFrame
 local TabContent = {}
 local CurrentTab = "Main"
 
@@ -177,12 +179,32 @@ function NightmareHub:CreateUI()
     -- Setup Discord tab content (HARDCODED)
     self:SetupDiscordTab()
     
-    -- Toggle button
-    ToggleButton.MouseButton1Click:Connect(function()
-        MainFrame.Visible = not MainFrame.Visible
+    -- 🔥 FIXED: Toggle button functionality - Use proper event connection
+    ToggleButton.MouseButton1Down:Connect(function()
+        print("🔘 Toggle button clicked!") -- Debug message
+        if MainFrame then
+            MainFrame.Visible = not MainFrame.Visible
+            print("📱 UI Visibility:", MainFrame.Visible and "SHOW" or "HIDE")
+        else
+            warn("❌ MainFrame not found!")
+        end
     end)
     
+    -- Alternative method if above doesn't work
+    ToggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            print("🔘 Toggle button InputBegan!") -- Debug message
+            if MainFrame then
+                MainFrame.Visible = not MainFrame.Visible
+                print("📱 UI Visibility:", MainFrame.Visible and "SHOW" or "HIDE")
+            end
+        end
+    end)
+    
+    -- Set default tab
     self:SwitchTab("Main")
+    
+    print("✅ UI Created Successfully!")
 end
 
 -- ==================== HELPER FUNCTIONS ====================
