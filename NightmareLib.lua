@@ -1,5 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY (Fixed Toggle Button)
+    NIGHTMARE HUB LIBRARY (Complete Version)
 ]]
 
 local NightmareHub = {}
@@ -8,7 +8,7 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- UI Variables - Make them accessible
+-- UI Variables (accessible like original)
 local ScreenGui
 local MainFrame
 local ToggleButton
@@ -16,6 +16,13 @@ local TabButtons = {}
 local ScrollFrame
 local TabContent = {}
 local CurrentTab = "Main"
+
+-- Button states (FIXED: No custom properties)
+local ButtonStates = {
+    joinServer = false,
+    serverHop = false,
+    rejoin = false
+}
 
 -- ==================== CREATE UI ====================
 function NightmareHub:CreateUI()
@@ -30,7 +37,7 @@ function NightmareHub:CreateUI()
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = game.CoreGui
     
-    -- Toggle Button
+    -- Toggle Button (EXACTLY LIKE ORIGINAL)
     ToggleButton = Instance.new("ImageButton")
     ToggleButton.Size = UDim2.new(0, 60, 0, 60)
     ToggleButton.Position = UDim2.new(0, 20, 0.5, -30)
@@ -45,6 +52,7 @@ function NightmareHub:CreateUI()
     MainFrame.Size = UDim2.new(0, 320, 0, 420)
     MainFrame.Position = UDim2.new(0.5, -160, 0.5, -210)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    MainFrame.BackgroundTransparency = 0.1
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
     MainFrame.Draggable = true
@@ -84,14 +92,14 @@ function NightmareHub:CreateUI()
     closeBtn.Font = Enum.Font.Arcade
     closeBtn.Parent = MainFrame
     
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 8)
-    closeCorner.Parent = closeBtn
+    local closeBtnCorner = Instance.new("UICorner")
+    closeBtnCorner.CornerRadius = UDim.new(0, 8)
+    closeBtnCorner.Parent = closeBtn
     
-    local closeStroke = Instance.new("UIStroke")
-    closeStroke.Color = Color3.fromRGB(255, 50, 50)
-    closeStroke.Thickness = 1
-    closeStroke.Parent = closeBtn
+    local closeBtnStroke = Instance.new("UIStroke")
+    closeBtnStroke.Color = Color3.fromRGB(255, 50, 50)
+    closeBtnStroke.Thickness = 1
+    closeBtnStroke.Parent = closeBtn
     
     closeBtn.MouseButton1Click:Connect(function()
         MainFrame.Visible = false
@@ -176,29 +184,17 @@ function NightmareHub:CreateUI()
         TabContent[tabName] = {}
     end
     
-    -- Setup Discord tab content (HARDCODED)
+    -- Setup Discord tab content
     self:SetupDiscordTab()
     
-    -- 🔥 FIXED: Toggle button functionality - Use proper event connection
-    ToggleButton.MouseButton1Down:Connect(function()
-        print("🔘 Toggle button clicked!") -- Debug message
-        if MainFrame then
-            MainFrame.Visible = not MainFrame.Visible
-            print("📱 UI Visibility:", MainFrame.Visible and "SHOW" or "HIDE")
-        else
-            warn("❌ MainFrame not found!")
-        end
-    end)
+    -- 🔥 CRITICAL: Delay to ensure everything loads before connecting events
+    task.wait(0.1)
     
-    -- Alternative method if above doesn't work
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            print("🔘 Toggle button InputBegan!") -- Debug message
-            if MainFrame then
-                MainFrame.Visible = not MainFrame.Visible
-                print("📱 UI Visibility:", MainFrame.Visible and "SHOW" or "HIDE")
-            end
-        end
+    -- Toggle button functionality (EXACTLY LIKE ORIGINAL)
+    ToggleButton.MouseButton1Click:Connect(function()
+        print("🔘 Toggle button clicked!")
+        MainFrame.Visible = not MainFrame.Visible
+        print("📱 UI Visibility:", MainFrame.Visible and "SHOW" or "HIDE")
     end)
     
     -- Set default tab
@@ -313,7 +309,7 @@ function NightmareHub:AddMiscToggle(text, callback)
     return toggle
 end
 
--- ==================== DISCORD TAB (HARDCODED) ====================
+-- ==================== DISCORD TAB (COMPLETE) ====================
 function NightmareHub:SetupDiscordTab()
     -- Social Section
     local socialSection = self:CreateSection("SOCIAL")
@@ -359,22 +355,22 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- Join Server Button
+    -- Join Server Button (FIXED: Using ButtonStates)
     local joinServerBtn = self:CreateToggleButton("Join Server", function()
-        if joinServerBtn.isJoining then return end
+        if ButtonStates.joinServer then return end
         
         local jobId = jobIdInput.Text:gsub("%s+", "")
         
         if jobId == "" then
-            joinServerBtn.isJoining = true
+            ButtonStates.joinServer = true
             joinServerBtn.Text = "ENTER JOB ID!"
             joinServerBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
             task.wait(1.5)
             joinServerBtn.Text = "Join Server"
             joinServerBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            joinServerBtn.isJoining = false
+            ButtonStates.joinServer = false
         else
-            joinServerBtn.isJoining = true
+            ButtonStates.joinServer = true
             joinServerBtn.Text = "JOINING..."
             joinServerBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             
@@ -395,11 +391,10 @@ function NightmareHub:SetupDiscordTab()
                 
                 joinServerBtn.Text = "Join Server"
                 joinServerBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-                joinServerBtn.isJoining = false
+                ButtonStates.joinServer = false
             end)
         end
     end)
-    joinServerBtn.isJoining = false
     table.insert(TabContent["Discord"], joinServerBtn)
     joinServerBtn.Parent = ScrollFrame
     joinServerBtn.Visible = false
@@ -426,11 +421,11 @@ function NightmareHub:SetupDiscordTab()
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- Server Hop Button
+    -- Server Hop Button (FIXED: Using ButtonStates)
     local serverHopBtn = self:CreateToggleButton("Server Hop", function()
-        if serverHopBtn.isHopping then return end
+        if ButtonStates.serverHop then return end
         
-        serverHopBtn.isHopping = true
+        ButtonStates.serverHop = true
         serverHopBtn.Text = "SEARCHING..."
         serverHopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
@@ -484,19 +479,18 @@ function NightmareHub:SetupDiscordTab()
             
             serverHopBtn.Text = "Server Hop"
             serverHopBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            serverHopBtn.isHopping = false
+            ButtonStates.serverHop = false
         end)
     end)
-    serverHopBtn.isHopping = false
     table.insert(TabContent["Discord"], serverHopBtn)
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- Rejoin Button
+    -- Rejoin Button (FIXED: Using ButtonStates)
     local rejoinBtn = self:CreateToggleButton("Rejoin Server", function()
-        if rejoinBtn.isRejoining then return end
+        if ButtonStates.rejoin then return end
         
-        rejoinBtn.isRejoining = true
+        ButtonStates.rejoin = true
         rejoinBtn.Text = "REJOINING..."
         rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
@@ -517,10 +511,9 @@ function NightmareHub:SetupDiscordTab()
             
             rejoinBtn.Text = "Rejoin Server"
             rejoinBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            rejoinBtn.isRejoining = false
+            ButtonStates.rejoin = false
         end)
     end)
-    rejoinBtn.isRejoining = false
     table.insert(TabContent["Discord"], rejoinBtn)
     rejoinBtn.Parent = ScrollFrame
     rejoinBtn.Visible = false
@@ -531,7 +524,7 @@ function NightmareHub:SetupDiscordTab()
     utilitySection.Parent = ScrollFrame
     utilitySection.Visible = false
     
-    -- Dynamic Island Toggle
+    -- Dynamic Island Toggle (COMPLETE)
     local dynamicIslandGui = nil
     local isDynamicIslandActive = false
     
@@ -565,7 +558,7 @@ function NightmareHub:SetupDiscordTab()
         islandStroke.Transparency = 0.5
         islandStroke.Parent = dynamicIsland
         
-        -- Avatar
+        -- Avatar Container
         local avatarContainer = Instance.new("Frame")
         avatarContainer.Name = "AvatarContainer"
         avatarContainer.Size = UDim2.new(0, 55, 0, 55)
@@ -590,7 +583,7 @@ function NightmareHub:SetupDiscordTab()
         avatarImgCorner.CornerRadius = UDim.new(1, 0)
         avatarImgCorner.Parent = avatarImage
         
-        -- Info
+        -- Info Container
         local infoContainer = Instance.new("Frame")
         infoContainer.Name = "InfoContainer"
         infoContainer.Size = UDim2.new(1, -260, 1, 0)
@@ -610,7 +603,69 @@ function NightmareHub:SetupDiscordTab()
         usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
         usernameLabel.Parent = infoContainer
         
-        -- Stats (FPS, Ping, Time)
+        local displayContainer = Instance.new("Frame")
+        displayContainer.Name = "DisplayContainer"
+        displayContainer.Size = UDim2.new(1, 0, 0, 18)
+        displayContainer.Position = UDim2.new(0, 0, 0, 26)
+        displayContainer.BackgroundTransparency = 1
+        displayContainer.Parent = infoContainer
+        
+        local displayNameLabel = Instance.new("TextLabel")
+        displayNameLabel.Name = "DisplayName"
+        displayNameLabel.Size = UDim2.new(0, 0, 1, 0)
+        displayNameLabel.Position = UDim2.new(0, 0, 0, 0)
+        displayNameLabel.BackgroundTransparency = 1
+        displayNameLabel.Text = LocalPlayer.DisplayName
+        displayNameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+        displayNameLabel.Font = Enum.Font.Gotham
+        displayNameLabel.TextSize = 12
+        displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        displayNameLabel.AutomaticSize = Enum.AutomaticSize.X
+        displayNameLabel.Parent = displayContainer
+        
+        local copyButtonBg = Instance.new("Frame")
+        copyButtonBg.Name = "CopyButtonBg"
+        copyButtonBg.Size = UDim2.new(0, 18, 0, 15)
+        copyButtonBg.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        copyButtonBg.BackgroundTransparency = 0.3
+        copyButtonBg.BorderSizePixel = 0
+        copyButtonBg.Parent = displayContainer
+        
+        local copyBgCorner = Instance.new("UICorner")
+        copyBgCorner.CornerRadius = UDim.new(1, 0)
+        copyBgCorner.Parent = copyButtonBg
+        
+        local copyBgStroke = Instance.new("UIStroke")
+        copyBgStroke.Color = Color3.fromRGB(60, 60, 60)
+        copyBgStroke.Thickness = 1
+        copyBgStroke.Transparency = 0.5
+        copyBgStroke.Parent = copyButtonBg
+        
+        local copyButton = Instance.new("ImageButton")
+        copyButton.Name = "CopyButton"
+        copyButton.Size = UDim2.new(0, 11, 0, 11)
+        copyButton.Position = UDim2.new(0.5, -5.5, 0.5, -5.5)
+        copyButton.BackgroundTransparency = 1
+        copyButton.Image = "rbxassetid://85474507309885"
+        copyButton.ImageColor3 = Color3.fromRGB(200, 200, 200)
+        copyButton.Parent = copyButtonBg
+        
+        local function updateCopyButtonPosition()
+            copyButtonBg.Position = UDim2.new(0, displayNameLabel.AbsoluteSize.X + 3, 0, 1.5)
+        end
+        
+        displayNameLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateCopyButtonPosition)
+        task.wait(0.1)
+        updateCopyButtonPosition()
+        
+        copyButton.MouseButton1Click:Connect(function()
+            setclipboard(LocalPlayer.Name)
+            copyButton.ImageColor3 = Color3.fromRGB(0, 255, 0)
+            wait(0.5)
+            copyButton.ImageColor3 = Color3.fromRGB(200, 200, 200)
+        end)
+        
+        -- Stats Container
         local statsContainer = Instance.new("Frame")
         statsContainer.Name = "StatsContainer"
         statsContainer.Size = UDim2.new(1, 0, 0, 22)
@@ -618,7 +673,7 @@ function NightmareHub:SetupDiscordTab()
         statsContainer.BackgroundTransparency = 1
         statsContainer.Parent = infoContainer
         
-        -- FPS
+        -- FPS Container
         local fpsContainer = Instance.new("Frame")
         fpsContainer.Name = "FPS"
         fpsContainer.Size = UDim2.new(0.33, -2, 1, 0)
@@ -631,18 +686,28 @@ function NightmareHub:SetupDiscordTab()
         fpsCorner.CornerRadius = UDim.new(0, 8)
         fpsCorner.Parent = fpsContainer
         
+        local fpsIcon = Instance.new("ImageLabel")
+        fpsIcon.Name = "FPSIcon"
+        fpsIcon.Size = UDim2.new(0, 16, 0, 16)
+        fpsIcon.Position = UDim2.new(0, 4, 0.5, -8)
+        fpsIcon.BackgroundTransparency = 1
+        fpsIcon.Image = "rbxassetid://113632612754030"
+        fpsIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        fpsIcon.Parent = fpsContainer
+        
         local fpsLabel = Instance.new("TextLabel")
         fpsLabel.Name = "FPSValue"
-        fpsLabel.Size = UDim2.new(1, 0, 1, 0)
+        fpsLabel.Size = UDim2.new(1, -24, 1, 0)
+        fpsLabel.Position = UDim2.new(0, 22, 0, 0)
         fpsLabel.BackgroundTransparency = 1
         fpsLabel.Text = "60"
         fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
         fpsLabel.Font = Enum.Font.GothamBold
         fpsLabel.TextSize = 11
-        fpsLabel.TextXAlignment = Enum.TextXAlignment.Center
+        fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
         fpsLabel.Parent = fpsContainer
         
-        -- Ping
+        -- Ping Container
         local pingContainer = Instance.new("Frame")
         pingContainer.Name = "Ping"
         pingContainer.Size = UDim2.new(0.33, 1, 1, 0)
@@ -655,18 +720,28 @@ function NightmareHub:SetupDiscordTab()
         pingCorner.CornerRadius = UDim.new(0, 8)
         pingCorner.Parent = pingContainer
         
+        local pingIcon = Instance.new("ImageLabel")
+        pingIcon.Name = "PingIcon"
+        pingIcon.Size = UDim2.new(0, 16, 0, 16)
+        pingIcon.Position = UDim2.new(0, 4, 0.5, -8)
+        pingIcon.BackgroundTransparency = 1
+        pingIcon.Image = "rbxassetid://100670680457997"
+        pingIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        pingIcon.Parent = pingContainer
+        
         local pingLabel = Instance.new("TextLabel")
         pingLabel.Name = "PingValue"
-        pingLabel.Size = UDim2.new(1, 0, 1, 0)
+        pingLabel.Size = UDim2.new(1, -24, 1, 0)
+        pingLabel.Position = UDim2.new(0, 22, 0, 0)
         pingLabel.BackgroundTransparency = 1
         pingLabel.Text = "0ms"
         pingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
         pingLabel.Font = Enum.Font.GothamBold
         pingLabel.TextSize = 11
-        pingLabel.TextXAlignment = Enum.TextXAlignment.Center
+        pingLabel.TextXAlignment = Enum.TextXAlignment.Left
         pingLabel.Parent = pingContainer
         
-        -- Time
+        -- Time Container
         local timeContainer = Instance.new("Frame")
         timeContainer.Name = "Time"
         timeContainer.Size = UDim2.new(0.33, 2, 1, 0)
@@ -679,20 +754,32 @@ function NightmareHub:SetupDiscordTab()
         timeCorner.CornerRadius = UDim.new(0, 8)
         timeCorner.Parent = timeContainer
         
+        local timeIcon = Instance.new("ImageLabel")
+        timeIcon.Name = "TimeIcon"
+        timeIcon.Size = UDim2.new(0, 16, 0, 16)
+        timeIcon.Position = UDim2.new(0, 4, 0.5, -8)
+        timeIcon.BackgroundTransparency = 1
+        timeIcon.Image = "rbxassetid://130623592742005"
+        timeIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        timeIcon.Parent = timeContainer
+        
         local timeLabel = Instance.new("TextLabel")
         timeLabel.Name = "TimeValue"
-        timeLabel.Size = UDim2.new(1, 0, 1, 0)
+        timeLabel.Size = UDim2.new(1, -24, 1, 0)
+        timeLabel.Position = UDim2.new(0, 22, 0, 0)
         timeLabel.BackgroundTransparency = 1
         timeLabel.Text = "00:00"
         timeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         timeLabel.Font = Enum.Font.GothamBold
         timeLabel.TextSize = 11
-        timeLabel.TextXAlignment = Enum.TextXAlignment.Center
+        timeLabel.TextXAlignment = Enum.TextXAlignment.Left
         timeLabel.Parent = timeContainer
         
-        -- Draggable
+        -- Draggable functionality
         local dragging = false
-        local dragInput, dragStart, startPos
+        local dragInput
+        local dragStart
+        local startPos
         
         local function update(input)
             local delta = input.Position - dragStart
