@@ -1,5 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY (FIXED VERSION)
+    NIGHTMARE HUB LIBRARY (ROBUST FIX VERSION)
 ]]
 
 local NightmareHub = {}
@@ -237,6 +237,7 @@ function NightmareHub:CreateToggleButton(text, callback)
     return toggleBtn
 end
 
+-- 🔥 ROBUST FIX: Create regular button, passing the button object to the callback
 function NightmareHub:CreateButton(text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 35)
@@ -259,7 +260,8 @@ function NightmareHub:CreateButton(text, callback)
     button.MouseButton1Click:Connect(function()
         print("🔘 BUTTON CLICKED:", text)
         if callback then 
-            callback() 
+            -- 🔥 KEY FIX: Pass the button object itself as the first argument
+            callback(button) 
         end
     end)
     
@@ -335,7 +337,7 @@ function NightmareHub:AddMiscToggle(text, callback)
     return toggle
 end
 
--- ==================== DISCORD TAB (FIXED) ====================
+-- ==================== DISCORD TAB (ROBUST FIX) ====================
 function NightmareHub:SetupDiscordTab()
     -- Social Section
     local socialSection = self:CreateSection("SOCIAL")
@@ -344,28 +346,28 @@ function NightmareHub:SetupDiscordTab()
     socialSection.Visible = false
     
     -- TIKTOK BUTTON
-    local tiktokBtn = self:CreateButton("Tiktok", function()
+    local tiktokBtn = self:CreateButton("Tiktok", function(button) -- 'button' is the argument
         print("🔥 Tiktok clicked")
         setclipboard("https://www.tiktok.com/@n1ghtmare.gg?_r=1&_t=ZS-91TYDcuhlRQ")
-        tiktokBtn.Text = "COPIED!"
-        tiktokBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        button.Text = "COPIED!"
+        button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
         task.wait(2)
-        tiktokBtn.Text = "Tiktok"
-        tiktokBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        button.Text = "Tiktok"
+        button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     end)
     table.insert(TabContent["Discord"], tiktokBtn)
     tiktokBtn.Parent = ScrollFrame
     tiktokBtn.Visible = false
     
     -- DISCORD BUTTON
-    local discordBtn = self:CreateButton("Discord", function()
+    local discordBtn = self:CreateButton("Discord", function(button) -- 'button' is the argument
         print("🔥 Discord clicked")
         setclipboard("https://discord.gg/Bcdt9nXV")
-        discordBtn.Text = "COPIED!"
-        discordBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        button.Text = "COPIED!"
+        button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
         task.wait(2)
-        discordBtn.Text = "Discord"
-        discordBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        button.Text = "Discord"
+        button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     end)
     table.insert(TabContent["Discord"], discordBtn)
     discordBtn.Parent = ScrollFrame
@@ -383,84 +385,78 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- JOIN SERVER BUTTON (FIXED)
-    local joinServerBtn = self:CreateButton("Join Server", function()
+    -- 🔥 JOIN SERVER BUTTON (ROBUST FIX)
+    local joinServerBtn = self:CreateButton("Join Server", function(button) -- 'button' is the argument
         if ButtonStates.joinServer then return end
         
         local jobId = jobIdInput.Text:gsub("%s+", "")
         
         if jobId == "" then
-            ButtonStates.joinServer = true
-            joinServerBtn.Text = "ENTER JOB ID!"
-            joinServerBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+            button.Text = "ENTER JOB ID!"
+            button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
             task.wait(1.5)
-            joinServerBtn.Text = "Join Server"
-            joinServerBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            ButtonStates.joinServer = false
-        else
-            ButtonStates.joinServer = true
-            joinServerBtn.Text = "JOINING..."
-            joinServerBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-            
-            -- FIX: Kirim tombol sebagai argumen ke task.spawn
-            task.spawn(function(btn, jobIdToJoin)
-                local success = pcall(function()
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, jobIdToJoin, LocalPlayer)
-                end)
-                
-                if success then
-                    btn.Text = "TELEPORTING..."
-                    btn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-                    task.wait(2)
-                else
-                    btn.Text = "FAILED!"
-                    btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-                    task.wait(2)
-                end
-                
-                btn.Text = "Join Server"
-                btn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-                ButtonStates.joinServer = false
-            end, joinServerBtn, jobId) -- FIX: Kirim joinServerBtn dan jobId
+            button.Text = "Join Server"
+            button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+            return
         end
+        
+        ButtonStates.joinServer = true
+        button.Text = "JOINING..."
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+        
+        local success, errorMsg = pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, LocalPlayer)
+        end)
+        
+        -- This part only runs if teleport FAILS.
+        if not success then
+            warn("Join Server failed: " .. tostring(errorMsg))
+            button.Text = "FAILED!"
+            button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+            task.wait(2)
+            button.Text = "Join Server"
+            button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        end
+        
+        ButtonStates.joinServer = false
     end)
     table.insert(TabContent["Discord"], joinServerBtn)
     joinServerBtn.Parent = ScrollFrame
     joinServerBtn.Visible = false
     
     -- COPY JOB ID BUTTON
-    local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function()
+    local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function(button) -- 'button' is the argument
         print("🔥 Copy Job ID clicked")
         local currentJobId = game.JobId
         if currentJobId and currentJobId ~= "" then
             setclipboard(currentJobId)
-            copyJobIdBtn.Text = "COPIED: " .. currentJobId:sub(1, 8) .. "..."
-            copyJobIdBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            button.Text = "COPIED: " .. currentJobId:sub(1, 8) .. "..."
+            button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
             task.wait(2)
-            copyJobIdBtn.Text = "Copy Current Job ID"
-            copyJobIdBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+            button.Text = "Copy Current Job ID"
+            button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
         else
-            copyJobIdBtn.Text = "NO JOB ID!"
-            copyJobIdBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+            button.Text = "NO JOB ID!"
+            button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
             task.wait(1)
-            copyJobIdBtn.Text = "Copy Current Job ID"
-            copyJobIdBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+            button.Text = "Copy Current Job ID"
+            button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
         end
     end)
     table.insert(TabContent["Discord"], copyJobIdBtn)
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- SERVER HOP BUTTON (FIXED)
-    local serverHopBtn = self:CreateButton("Server Hop", function()
+    -- 🔥 SERVER HOP BUTTON (ROBUST FIX)
+    local serverHopBtn = self:CreateButton("Server Hop", function(button) -- 'button' is the argument
         if ButtonStates.serverHop then return end
         
         ButtonStates.serverHop = true
-        serverHopBtn.Text = "SEARCHING..."
-        serverHopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+        button.Text = "SEARCHING..."
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
-        -- FIX: Kirim tombol sebagai argumen ke task.spawn
-        task.spawn(function(btn)
+        -- Pass the button reference into the new thread
+        task.spawn(function(btnRef)
             local servers = {}
             local cursor = ""
             
@@ -475,9 +471,9 @@ function NightmareHub:SetupDiscordTab()
                     return HttpService:JSONDecode(game:HttpGet(url))
                 end)
                 
-                if success and result.data then
+                if success and result and result.data then
                     for _, server in ipairs(result.data) do
-                        if server.id ~= game.JobId and server.playing < server.maxPlayers then
+                        if server.id ~= game.JobId and server.playing < server.maxPlayers and server.maxPlayers > 0 then
                             table.insert(servers, server.id)
                         end
                     end
@@ -485,65 +481,58 @@ function NightmareHub:SetupDiscordTab()
                 else
                     break
                 end
-            until cursor == ""
+            until cursor == "" or #servers > 20
             
             if #servers > 0 then
                 local randomServer = servers[math.random(1, #servers)]
-                local success = pcall(function()
+                local tpSuccess = pcall(function()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, LocalPlayer)
                 end)
                 
-                if success then
-                    btn.Text = "HOPPING..."
-                    btn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-                    task.wait(2)
-                else
-                    btn.Text = "FAILED!"
-                    btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                -- This part only runs if teleport FAILS.
+                if not tpSuccess then
+                    btnRef.Text = "FAILED!"
+                    btnRef.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
                     task.wait(2)
                 end
             else
-                btn.Text = "NO SERVERS!"
-                btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                btnRef.Text = "NO SERVERS!"
+                btnRef.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
                 task.wait(2)
             end
             
-            btn.Text = "Server Hop"
-            btn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+            btnRef.Text = "Server Hop"
+            btnRef.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
             ButtonStates.serverHop = false
-        end, serverHopBtn) -- FIX: Kirim serverHopBtn
+        end, button) -- Pass the 'button' object to task.spawn
     end)
     table.insert(TabContent["Discord"], serverHopBtn)
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- REJOIN BUTTON (FIXED)
-    local rejoinBtn = self:CreateButton("Rejoin Server", function()
+    -- 🔥 REJOIN BUTTON (ROBUST FIX)
+    local rejoinBtn = self:CreateButton("Rejoin Server", function(button) -- 'button' is the argument
         if ButtonStates.rejoin then return end
         
         ButtonStates.rejoin = true
-        rejoinBtn.Text = "REJOINING..."
-        rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+        button.Text = "REJOINING..."
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
-        -- FIX: Kirim tombol sebagai argumen ke task.spawn
-        task.spawn(function(btn)
-            local success, errorMsg = pcall(function()
-                -- Cara yang paling efektif untuk rejoin
-                TeleportService:Teleport(game.PlaceId, LocalPlayer)
-            end)
-            
-            -- Karena teleportasi akan memindahkan pemain, bagian ini mungkin tidak akan terlihat
-            -- tapi kita tetap menambahkannya untuk penanganan error
-            if not success then
-                warn("Rejoin failed: " .. tostring(errorMsg))
-                btn.Text = "FAILED!"
-                btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-                task.wait(2)
-                btn.Text = "Rejoin Server"
-                btn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-                ButtonStates.rejoin = false
-            end
-        end, rejoinBtn) -- FIX: Kirim rejoinBtn
+        local success, errorMsg = pcall(function()
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end)
+        
+        -- This part only runs if teleport FAILS.
+        if not success then
+            warn("Rejoin failed: " .. tostring(errorMsg))
+            button.Text = "FAILED!"
+            button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+            task.wait(2)
+            button.Text = "Rejoin Server"
+            button.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        end
+        
+        ButtonStates.rejoin = false
     end)
     table.insert(TabContent["Discord"], rejoinBtn)
     rejoinBtn.Parent = ScrollFrame
