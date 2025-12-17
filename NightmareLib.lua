@@ -520,7 +520,7 @@ function NightmareHub:SetupDiscordTab()
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- 🔥 REJOIN BUTTON (WITH COLOR CHANGES)
+    -- 🔥 REJOIN BUTTON (FIXED)
     local rejoinBtn = self:CreateButton("Rejoin Server", function()
         if ButtonStates.rejoin then return end
         
@@ -530,7 +530,8 @@ function NightmareHub:SetupDiscordTab()
         
         task.spawn(function()
             local success = pcall(function()
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+                -- Fixed: Use TeleportService:Teleport instead of TeleportToPlaceInstance
+                TeleportService:Teleport(game.PlaceId, LocalPlayer)
             end)
             
             if success then
