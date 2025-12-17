@@ -1,5 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY (Debug Version)
+    NIGHTMARE HUB LIBRARY (Color Changes + Regular Buttons)
 ]]
 
 local NightmareHub = {}
@@ -240,7 +240,7 @@ function NightmareHub:CreateToggleButton(text, callback)
     return toggleBtn
 end
 
--- 🔥 NEW: Create regular button (not toggle) WITH DEBUG
+-- 🔥 FIXED: Create regular button WITH COLOR CHANGES
 function NightmareHub:CreateButton(text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 35)
@@ -260,14 +260,11 @@ function NightmareHub:CreateButton(text, callback)
     btnStroke.Thickness = 1
     btnStroke.Parent = button
     
-    -- 🔥 DEBUG: Add debug print to button click
+    -- 🔥 FIXED: Click with color changes but not toggle
     button.MouseButton1Click:Connect(function()
         print("🔘 BUTTON CLICKED:", text)
         if callback then 
-            print("🔥 Executing callback for:", text)
             callback() 
-        else
-            print("❌ No callback for:", text)
         end
     end)
     
@@ -343,7 +340,7 @@ function NightmareHub:AddMiscToggle(text, callback)
     return toggle
 end
 
--- ==================== DISCORD TAB (WITH DEBUG) ====================
+-- ==================== DISCORD TAB (WITH COLOR CHANGES) ====================
 function NightmareHub:SetupDiscordTab()
     -- Social Section
     local socialSection = self:CreateSection("SOCIAL")
@@ -351,9 +348,9 @@ function NightmareHub:SetupDiscordTab()
     socialSection.Parent = ScrollFrame
     socialSection.Visible = false
     
-    -- Tiktok Button
+    -- 🔥 TIKTOK BUTTON (WITH COLOR CHANGES)
     local tiktokBtn = self:CreateButton("Tiktok", function()
-        print("🔥 Tiktok button callback executed")
+        print("🔥 Tiktok clicked")
         setclipboard("https://www.tiktok.com/@n1ghtmare.gg?_r=1&_t=ZS-91TYDcuhlRQ")
         tiktokBtn.Text = "COPIED!"
         tiktokBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
@@ -365,9 +362,9 @@ function NightmareHub:SetupDiscordTab()
     tiktokBtn.Parent = ScrollFrame
     tiktokBtn.Visible = false
     
-    -- Discord Button
+    -- 🔥 DISCORD BUTTON (WITH COLOR CHANGES)
     local discordBtn = self:CreateButton("Discord", function()
-        print("🔥 Discord button callback executed")
+        print("🔥 Discord clicked")
         setclipboard("https://discord.gg/Bcdt9nXV")
         discordBtn.Text = "COPIED!"
         discordBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
@@ -391,18 +388,11 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- 🔥 JOIN SERVER BUTTON WITH DEBUG
+    -- 🔥 JOIN SERVER BUTTON (WITH COLOR CHANGES)
     local joinServerBtn = self:CreateButton("Join Server", function()
-        print("🔥 Join Server button clicked!")
-        print("🔥 ButtonStates.joinServer:", ButtonStates.joinServer)
-        
-        if ButtonStates.joinServer then 
-            print("❌ Already joining server!")
-            return 
-        end
+        if ButtonStates.joinServer then return end
         
         local jobId = jobIdInput.Text:gsub("%s+", "")
-        print("🔥 Job ID:", jobId)
         
         if jobId == "" then
             ButtonStates.joinServer = true
@@ -418,12 +408,9 @@ function NightmareHub:SetupDiscordTab()
             joinServerBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             
             task.spawn(function()
-                print("🔥 Attempting to teleport to:", jobId)
                 local success = pcall(function()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, LocalPlayer)
                 end)
-                
-                print("🔥 Teleport success:", success)
                 
                 if success then
                     joinServerBtn.Text = "TELEPORTING..."
@@ -445,12 +432,10 @@ function NightmareHub:SetupDiscordTab()
     joinServerBtn.Parent = ScrollFrame
     joinServerBtn.Visible = false
     
-    -- 🔥 COPY JOB ID BUTTON WITH DEBUG
+    -- 🔥 COPY JOB ID BUTTON (WITH COLOR CHANGES)
     local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function()
-        print("🔥 Copy Job ID button clicked!")
+        print("🔥 Copy Job ID clicked")
         local currentJobId = game.JobId
-        print("🔥 Current Job ID:", currentJobId)
-        
         if currentJobId and currentJobId ~= "" then
             setclipboard(currentJobId)
             copyJobIdBtn.Text = "COPIED: " .. currentJobId:sub(1, 8) .. "..."
@@ -470,22 +455,15 @@ function NightmareHub:SetupDiscordTab()
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- 🔥 SERVER HOP BUTTON WITH DEBUG
+    -- 🔥 SERVER HOP BUTTON (WITH COLOR CHANGES)
     local serverHopBtn = self:CreateButton("Server Hop", function()
-        print("🔥 Server Hop button clicked!")
-        print("🔥 ButtonStates.serverHop:", ButtonStates.serverHop)
-        
-        if ButtonStates.serverHop then 
-            print("❌ Already server hopping!")
-            return 
-        end
+        if ButtonStates.serverHop then return end
         
         ButtonStates.serverHop = true
         serverHopBtn.Text = "SEARCHING..."
         serverHopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
         task.spawn(function()
-            print("🔥 Starting server hop search...")
             local servers = {}
             local cursor = ""
             
@@ -500,8 +478,6 @@ function NightmareHub:SetupDiscordTab()
                     return HttpService:JSONDecode(game:HttpGet(url))
                 end)
                 
-                print("🔥 API Success:", success, "Servers found:", success and #result.data or 0)
-                
                 if success and result.data then
                     for _, server in ipairs(result.data) do
                         if server.id ~= game.JobId and server.playing < server.maxPlayers then
@@ -514,17 +490,11 @@ function NightmareHub:SetupDiscordTab()
                 end
             until cursor == ""
             
-            print("🔥 Total available servers:", #servers)
-            
             if #servers > 0 then
                 local randomServer = servers[math.random(1, #servers)]
-                print("🔥 Selected server:", randomServer)
-                
                 local success = pcall(function()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, LocalPlayer)
                 end)
-                
-                print("🔥 Server hop success:", success)
                 
                 if success then
                     serverHopBtn.Text = "HOPPING..."
@@ -550,27 +520,18 @@ function NightmareHub:SetupDiscordTab()
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- 🔥 REJOIN BUTTON WITH DEBUG
+    -- 🔥 REJOIN BUTTON (WITH COLOR CHANGES)
     local rejoinBtn = self:CreateButton("Rejoin Server", function()
-        print("🔥 Rejoin Server button clicked!")
-        print("🔥 ButtonStates.rejoin:", ButtonStates.rejoin)
-        
-        if ButtonStates.rejoin then 
-            print("❌ Already rejoining!")
-            return 
-        end
+        if ButtonStates.rejoin then return end
         
         ButtonStates.rejoin = true
         rejoinBtn.Text = "REJOINING..."
         rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
         task.spawn(function()
-            print("🔥 Attempting to rejoin...")
             local success = pcall(function()
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
             end)
-            
-            print("🔥 Rejoin success:", success)
             
             if success then
                 rejoinBtn.Text = "TELEPORTING..."
