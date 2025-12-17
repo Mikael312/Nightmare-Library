@@ -1,5 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY (Color Changes + Regular Buttons)
+    NIGHTMARE HUB LIBRARY (FIXED VERSION)
 ]]
 
 local NightmareHub = {}
@@ -187,9 +187,6 @@ function NightmareHub:CreateUI()
     -- Setup Discord tab content
     self:SetupDiscordTab()
     
-    -- 🔥 CRITICAL: Delay to ensure everything loads before connecting events
-    task.wait(0.1)
-    
     -- Toggle button functionality
     ToggleButton.MouseButton1Click:Connect(function()
         print("🔘 Toggle button clicked!")
@@ -240,7 +237,6 @@ function NightmareHub:CreateToggleButton(text, callback)
     return toggleBtn
 end
 
--- 🔥 FIXED: Create regular button WITH COLOR CHANGES
 function NightmareHub:CreateButton(text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 35)
@@ -260,7 +256,6 @@ function NightmareHub:CreateButton(text, callback)
     btnStroke.Thickness = 1
     btnStroke.Parent = button
     
-    -- 🔥 FIXED: Click with color changes but not toggle
     button.MouseButton1Click:Connect(function()
         print("🔘 BUTTON CLICKED:", text)
         if callback then 
@@ -340,7 +335,7 @@ function NightmareHub:AddMiscToggle(text, callback)
     return toggle
 end
 
--- ==================== DISCORD TAB (WITH COLOR CHANGES) ====================
+-- ==================== DISCORD TAB (FIXED) ====================
 function NightmareHub:SetupDiscordTab()
     -- Social Section
     local socialSection = self:CreateSection("SOCIAL")
@@ -348,7 +343,7 @@ function NightmareHub:SetupDiscordTab()
     socialSection.Parent = ScrollFrame
     socialSection.Visible = false
     
-    -- 🔥 TIKTOK BUTTON (WITH COLOR CHANGES)
+    -- TIKTOK BUTTON
     local tiktokBtn = self:CreateButton("Tiktok", function()
         print("🔥 Tiktok clicked")
         setclipboard("https://www.tiktok.com/@n1ghtmare.gg?_r=1&_t=ZS-91TYDcuhlRQ")
@@ -362,7 +357,7 @@ function NightmareHub:SetupDiscordTab()
     tiktokBtn.Parent = ScrollFrame
     tiktokBtn.Visible = false
     
-    -- 🔥 DISCORD BUTTON (WITH COLOR CHANGES)
+    -- DISCORD BUTTON
     local discordBtn = self:CreateButton("Discord", function()
         print("🔥 Discord clicked")
         setclipboard("https://discord.gg/Bcdt9nXV")
@@ -388,7 +383,7 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- 🔥 JOIN SERVER BUTTON (WITH COLOR CHANGES)
+    -- JOIN SERVER BUTTON (FIXED)
     local joinServerBtn = self:CreateButton("Join Server", function()
         if ButtonStates.joinServer then return end
         
@@ -407,32 +402,33 @@ function NightmareHub:SetupDiscordTab()
             joinServerBtn.Text = "JOINING..."
             joinServerBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             
-            task.spawn(function()
+            -- FIX: Kirim tombol sebagai argumen ke task.spawn
+            task.spawn(function(btn, jobIdToJoin)
                 local success = pcall(function()
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, LocalPlayer)
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, jobIdToJoin, LocalPlayer)
                 end)
                 
                 if success then
-                    joinServerBtn.Text = "TELEPORTING..."
-                    joinServerBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+                    btn.Text = "TELEPORTING..."
+                    btn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
                     task.wait(2)
                 else
-                    joinServerBtn.Text = "FAILED!"
-                    joinServerBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                    btn.Text = "FAILED!"
+                    btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
                     task.wait(2)
                 end
                 
-                joinServerBtn.Text = "Join Server"
-                joinServerBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+                btn.Text = "Join Server"
+                btn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
                 ButtonStates.joinServer = false
-            end)
+            end, joinServerBtn, jobId) -- FIX: Kirim joinServerBtn dan jobId
         end
     end)
     table.insert(TabContent["Discord"], joinServerBtn)
     joinServerBtn.Parent = ScrollFrame
     joinServerBtn.Visible = false
     
-    -- 🔥 COPY JOB ID BUTTON (WITH COLOR CHANGES)
+    -- COPY JOB ID BUTTON
     local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function()
         print("🔥 Copy Job ID clicked")
         local currentJobId = game.JobId
@@ -455,7 +451,7 @@ function NightmareHub:SetupDiscordTab()
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- 🔥 SERVER HOP BUTTON (WITH COLOR CHANGES)
+    -- SERVER HOP BUTTON (FIXED)
     local serverHopBtn = self:CreateButton("Server Hop", function()
         if ButtonStates.serverHop then return end
         
@@ -463,7 +459,8 @@ function NightmareHub:SetupDiscordTab()
         serverHopBtn.Text = "SEARCHING..."
         serverHopBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
-        task.spawn(function()
+        -- FIX: Kirim tombol sebagai argumen ke task.spawn
+        task.spawn(function(btn)
             local servers = {}
             local cursor = ""
             
@@ -497,30 +494,30 @@ function NightmareHub:SetupDiscordTab()
                 end)
                 
                 if success then
-                    serverHopBtn.Text = "HOPPING..."
-                    serverHopBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+                    btn.Text = "HOPPING..."
+                    btn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
                     task.wait(2)
                 else
-                    serverHopBtn.Text = "FAILED!"
-                    serverHopBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                    btn.Text = "FAILED!"
+                    btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
                     task.wait(2)
                 end
             else
-                serverHopBtn.Text = "NO SERVERS!"
-                serverHopBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                btn.Text = "NO SERVERS!"
+                btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
                 task.wait(2)
             end
             
-            serverHopBtn.Text = "Server Hop"
-            serverHopBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+            btn.Text = "Server Hop"
+            btn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
             ButtonStates.serverHop = false
-        end)
+        end, serverHopBtn) -- FIX: Kirim serverHopBtn
     end)
     table.insert(TabContent["Discord"], serverHopBtn)
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- 🔥 REJOIN BUTTON (FIXED)
+    -- REJOIN BUTTON (FIXED)
     local rejoinBtn = self:CreateButton("Rejoin Server", function()
         if ButtonStates.rejoin then return end
         
@@ -528,26 +525,25 @@ function NightmareHub:SetupDiscordTab()
         rejoinBtn.Text = "REJOINING..."
         rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
-        task.spawn(function()
-            local success = pcall(function()
-                -- Fixed: Use TeleportService:Teleport instead of TeleportToPlaceInstance
+        -- FIX: Kirim tombol sebagai argumen ke task.spawn
+        task.spawn(function(btn)
+            local success, errorMsg = pcall(function()
+                -- Cara yang paling efektif untuk rejoin
                 TeleportService:Teleport(game.PlaceId, LocalPlayer)
             end)
             
-            if success then
-                rejoinBtn.Text = "TELEPORTING..."
-                rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            -- Karena teleportasi akan memindahkan pemain, bagian ini mungkin tidak akan terlihat
+            -- tapi kita tetap menambahkannya untuk penanganan error
+            if not success then
+                warn("Rejoin failed: " .. tostring(errorMsg))
+                btn.Text = "FAILED!"
+                btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
                 task.wait(2)
-            else
-                rejoinBtn.Text = "FAILED!"
-                rejoinBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-                task.wait(2)
+                btn.Text = "Rejoin Server"
+                btn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+                ButtonStates.rejoin = false
             end
-            
-            rejoinBtn.Text = "Rejoin Server"
-            rejoinBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            ButtonStates.rejoin = false
-        end)
+        end, rejoinBtn) -- FIX: Kirim rejoinBtn
     end)
     table.insert(TabContent["Discord"], rejoinBtn)
     rejoinBtn.Parent = ScrollFrame
