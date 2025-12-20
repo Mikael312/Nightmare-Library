@@ -1,11 +1,12 @@
 --[[
-    NIGHTMARE HUB LIBRARY (WITH FPS BOOSTER)
+    NIGHTMARE HUB LIBRARY (CORRECTED ORDER)
 ]]
 
 local NightmareHub = {}
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 -- UI Variables
@@ -335,8 +336,11 @@ function NightmareHub:AddMiscToggle(text, callback)
     return toggle
 end
 
--- ==================== DISCORD TAB (WITH FPS BOOSTER) ====================
+-- ==================== DISCORD TAB (CORRECTED ORDER) ====================
 function NightmareHub:SetupDiscordTab()
+    local Lighting = game:GetService("Lighting")
+    local Terrain = workspace:FindFirstChild("Terrain")
+
     -- Social Section
     local socialSection = self:CreateSection("SOCIAL")
     table.insert(TabContent["Discord"], socialSection)
@@ -383,7 +387,7 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- JOIN SERVER BUTTON (ROBUST FIX)
+    -- JOIN SERVER BUTTON
     local joinServerBtn = self:CreateButton("Join Server", function(button)
         if ButtonStates.joinServer then return end
         
@@ -444,7 +448,7 @@ function NightmareHub:SetupDiscordTab()
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- SERVER HOP BUTTON (ROBUST FIX)
+    -- SERVER HOP BUTTON
     local serverHopBtn = self:CreateButton("Server Hop", function(button)
         if ButtonStates.serverHop then return end
         
@@ -505,7 +509,7 @@ function NightmareHub:SetupDiscordTab()
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- REJOIN BUTTON (ROBUST FIX)
+    -- REJOIN BUTTON
     local rejoinBtn = self:CreateButton("Rejoin Server", function(button)
         if ButtonStates.rejoin then return end
         
@@ -537,8 +541,8 @@ function NightmareHub:SetupDiscordTab()
     table.insert(TabContent["Discord"], utilitySection)
     utilitySection.Parent = ScrollFrame
     utilitySection.Visible = false
-    
-    -- Dynamic Island Toggle (KEPT AS TOGGLE)
+
+    -- ==================== DYNAMIC ISLAND ====================
     local dynamicIslandGui = nil
     local isDynamicIslandActive = false
     
@@ -818,12 +822,7 @@ function NightmareHub:SetupDiscordTab()
     dynamicIslandBtn.Parent = ScrollFrame
     dynamicIslandBtn.Visible = false
 
-    -- 🔥 NEW: FPS BOOSTER TOGGLE
-    -- Define services needed for optimization functions
-    local Lighting = game:GetService("Lighting")
-    local Terrain = workspace:FindFirstChild("Terrain")
-    
-    -- Copy your functions here
+    -- ==================== FPS BOOSTER ====================
     local function removeTextures()
         print("🔧 Removing textures...")
         for _, obj in pairs(workspace:GetDescendants()) do
@@ -847,13 +846,11 @@ function NightmareHub:SetupDiscordTab()
     local function applyLowGraphics()
         print("🔧 Applying low graphics settings...")
         
-        -- Lighting optimizations
         if Lighting then
             Lighting.GlobalShadows = false
             Lighting.FogEnd = 9e9
             Lighting.Brightness = 0
             
-            -- Remove lighting effects
             for _, effect in pairs(Lighting:GetChildren()) do
                 if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or 
                    effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
@@ -862,7 +859,6 @@ function NightmareHub:SetupDiscordTab()
             end
         end
         
-        -- Terrain optimization
         if Terrain then
             Terrain.WaterWaveSize = 0
             Terrain.WaterWaveSpeed = 0
@@ -870,31 +866,131 @@ function NightmareHub:SetupDiscordTab()
             Terrain.WaterTransparency = 0
         end
         
-        -- Reduce part quality
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
     end
     
-    -- Create the toggle button
     local fpsBoosterBtn = self:CreateToggleButton("FPS Booster", function(state)
         if state then
             print("✅ FPS Booster ON")
-            -- Run all optimization functions
             removeTextures()
             removeParticles()
             applyLowGraphics()
         else
             print("❌ FPS Booster OFF")
-            -- Note: Reverting these changes is complex and may require a game rejoin.
-            -- For simplicity, we're just turning the booster off.
         end
     end)
-
-    -- 🔥 DEBUGGING: Check console for this message
-    print("🔧 FPS Booster button created!")
-
     table.insert(TabContent["Discord"], fpsBoosterBtn)
     fpsBoosterBtn.Parent = ScrollFrame
     fpsBoosterBtn.Visible = false
+
+    -- ==================== AURORA VISUAL ====================
+    _G.AuroraAnimation = {
+        Active = false,
+        Effects = {}
+    }
+
+    local function removeAuroraEffects()
+        _G.AuroraAnimation.Active = false
+        for _, obj in pairs(Lighting:GetChildren()) do
+            if obj.Name == "AuroraEffect" then
+                obj:Destroy()
+            end
+        end
+    end
+
+    local function addAurora()
+        removeAuroraEffects()
+        
+        local sky = Instance.new("Sky")
+        sky.Name = "AuroraEffect"
+        sky.SkyboxBk = "rbxasset://textures/sky/sky512_bk.tex"
+        sky.SkyboxDn = "rbxasset://textures/sky/sky512_dn.tex"
+        sky.SkyboxFt = "rbxasset://textures/sky/sky512_ft.tex"
+        sky.SkyboxLf = "rbxasset://textures/sky/sky512_lf.tex"
+        sky.SkyboxRt = "rbxasset://textures/sky/sky512_rt.tex"
+        sky.SkyboxUp = "rbxasset://textures/sky/sky512_up.tex"
+        sky.StarCount = 8000
+        sky.CelestialBodiesShown = true
+        sky.Parent = Lighting
+        
+        local colorCorrection = Instance.new("ColorCorrectionEffect")
+        colorCorrection.Name = "AuroraEffect"
+        colorCorrection.TintColor = Color3.fromRGB(100, 255, 200)
+        colorCorrection.Brightness = 0.05
+        colorCorrection.Contrast = 0.1
+        colorCorrection.Saturation = 0.2
+        colorCorrection.Parent = Lighting
+        
+        local atmosphere = Instance.new("Atmosphere")
+        atmosphere.Name = "AuroraEffect"
+        atmosphere.Color = Color3.fromRGB(100, 200, 255)
+        atmosphere.Glare = 0.5
+        atmosphere.Haze = 1.5
+        atmosphere.Density = 0.3
+        atmosphere.Parent = Lighting
+        
+        local bloom = Instance.new("BloomEffect")
+        bloom.Name = "AuroraEffect"
+        bloom.Intensity = 0.5
+        bloom.Size = 24
+        bloom.Threshold = 0.8
+        bloom.Parent = Lighting
+        
+        _G.AuroraAnimation.Effects = {
+            ColorCorrection = colorCorrection,
+            Atmosphere = atmosphere,
+            Bloom = bloom
+        }
+        
+        _G.AuroraAnimation.Active = true
+        
+        task.spawn(function()
+            local time = 0
+            while _G.AuroraAnimation.Active do
+                time = time + 0.01
+                
+                local r = 80 + math.sin(time * 0.5) * 40
+                local g = 180 + math.sin(time * 0.3) * 75
+                local b = 200 + math.sin(time * 0.4) * 55
+                
+                if colorCorrection and colorCorrection.Parent then
+                    colorCorrection.TintColor = Color3.fromRGB(r, g, b)
+                    colorCorrection.Brightness = 0.05 + math.sin(time * 0.2) * 0.03
+                    colorCorrection.Saturation = 0.2 + math.sin(time * 0.25) * 0.1
+                end
+                
+                if atmosphere and atmosphere.Parent then
+                    local ar = 80 + math.sin(time * 0.4 + 1) * 50
+                    local ag = 150 + math.sin(time * 0.35 + 2) * 70
+                    local ab = 220 + math.sin(time * 0.3 + 3) * 35
+                    
+                    atmosphere.Color = Color3.fromRGB(ar, ag, ab)
+                    atmosphere.Haze = 1.3 + math.sin(time * 0.15) * 0.4
+                    atmosphere.Density = 0.25 + math.sin(time * 0.18) * 0.15
+                end
+                
+                if bloom and bloom.Parent then
+                    bloom.Intensity = 0.4 + math.sin(time * 0.3) * 0.2
+                    bloom.Size = 20 + math.sin(time * 0.25) * 8
+                end
+                
+                task.wait(0.03)
+            end
+        end)
+    end
+
+    local auroraVisualBtn = self:CreateToggleButton("Aurora Visual", function(state)
+        if state then
+            print("✅ Aurora Visual ON")
+            addAurora()
+        else
+            print("❌ Aurora Visual OFF")
+            removeAuroraEffects()
+        end
+    end)
+    table.insert(TabContent["Discord"], auroraVisualBtn)
+    auroraVisualBtn.Parent = ScrollFrame
+    auroraVisualBtn.Visible = false
 end
 
 -- ==================== TAB SWITCHING ====================
