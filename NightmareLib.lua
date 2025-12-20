@@ -237,7 +237,6 @@ function NightmareHub:CreateToggleButton(text, callback)
     return toggleBtn
 end
 
--- 🔥 ROBUST FIX: Create regular button, passing the button object to the callback
 function NightmareHub:CreateButton(text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 35)
@@ -260,7 +259,6 @@ function NightmareHub:CreateButton(text, callback)
     button.MouseButton1Click:Connect(function()
         print("🔘 BUTTON CLICKED:", text)
         if callback then 
-            -- 🔥 KEY FIX: Pass the button object itself as the first argument
             callback(button) 
         end
     end)
@@ -540,80 +538,6 @@ function NightmareHub:SetupDiscordTab()
     utilitySection.Parent = ScrollFrame
     utilitySection.Visible = false
     
-    -- 🔥 NEW: FPS BOOSTER TOGGLE
-    -- Define services needed for optimization functions
-    local Lighting = game:GetService("Lighting")
-    local Terrain = workspace:FindFirstChild("Terrain")
-    
-    -- Copy your functions here
-    local function removeTextures()
-        print("🔧 Removing textures...")
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("Texture") or obj:IsA("Decal") then
-                obj.Transparency = 1
-            elseif obj:IsA("MeshPart") then
-                obj.TextureID = ""
-            end
-        end
-    end
-
-    local function removeParticles()
-        print("🔧 Removing particles...")
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-                obj.Enabled = false
-            end
-        end
-    end
-
-    local function applyLowGraphics()
-        print("🔧 Applying low graphics settings...")
-        
-        -- Lighting optimizations
-        if Lighting then
-            Lighting.GlobalShadows = false
-            Lighting.FogEnd = 9e9
-            Lighting.Brightness = 0
-            
-            -- Remove lighting effects
-            for _, effect in pairs(Lighting:GetChildren()) do
-                if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or 
-                   effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
-                    effect.Enabled = false
-                end
-            end
-        end
-        
-        -- Terrain optimization
-        if Terrain then
-            Terrain.WaterWaveSize = 0
-            Terrain.WaterWaveSpeed = 0
-            Terrain.WaterReflectance = 0
-            Terrain.WaterTransparency = 0
-        end
-        
-        -- Reduce part quality
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-    end
-    
-    -- Create the toggle button
-    local fpsBoosterBtn = self:CreateToggleButton("FPS Booster", function(state)
-        if state then
-            print("✅ FPS Booster ON")
-            -- Run all optimization functions
-            removeTextures()
-            removeParticles()
-            applyLowGraphics()
-        else
-            print("❌ FPS Booster OFF")
-            -- Note: Reverting these changes is complex and may require a game rejoin.
-            -- For simplicity, we're just turning the booster off.
-        end
-    end)
-    table.insert(TabContent["Discord"], fpsBoosterBtn)
-    fpsBoosterBtn.Parent = ScrollFrame
-    fpsBoosterBtn.Visible = false
-    
     -- Dynamic Island Toggle (KEPT AS TOGGLE)
     local dynamicIslandGui = nil
     local isDynamicIslandActive = false
@@ -873,7 +797,6 @@ function NightmareHub:SetupDiscordTab()
         return diScreenGui
     end
     
-    -- Dynamic Island Toggle (KEPT AS TOGGLE)
     local dynamicIslandBtn = self:CreateToggleButton("Dynamic Island", function(state)
         isDynamicIslandActive = state
         
@@ -894,6 +817,84 @@ function NightmareHub:SetupDiscordTab()
     table.insert(TabContent["Discord"], dynamicIslandBtn)
     dynamicIslandBtn.Parent = ScrollFrame
     dynamicIslandBtn.Visible = false
+
+    -- 🔥 NEW: FPS BOOSTER TOGGLE
+    -- Define services needed for optimization functions
+    local Lighting = game:GetService("Lighting")
+    local Terrain = workspace:FindFirstChild("Terrain")
+    
+    -- Copy your functions here
+    local function removeTextures()
+        print("🔧 Removing textures...")
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("Texture") or obj:IsA("Decal") then
+                obj.Transparency = 1
+            elseif obj:IsA("MeshPart") then
+                obj.TextureID = ""
+            end
+        end
+    end
+
+    local function removeParticles()
+        print("🔧 Removing particles...")
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                obj.Enabled = false
+            end
+        end
+    end
+
+    local function applyLowGraphics()
+        print("🔧 Applying low graphics settings...")
+        
+        -- Lighting optimizations
+        if Lighting then
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.Brightness = 0
+            
+            -- Remove lighting effects
+            for _, effect in pairs(Lighting:GetChildren()) do
+                if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or 
+                   effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
+                    effect.Enabled = false
+                end
+            end
+        end
+        
+        -- Terrain optimization
+        if Terrain then
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+        end
+        
+        -- Reduce part quality
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    end
+    
+    -- Create the toggle button
+    local fpsBoosterBtn = self:CreateToggleButton("FPS Booster", function(state)
+        if state then
+            print("✅ FPS Booster ON")
+            -- Run all optimization functions
+            removeTextures()
+            removeParticles()
+            applyLowGraphics()
+        else
+            print("❌ FPS Booster OFF")
+            -- Note: Reverting these changes is complex and may require a game rejoin.
+            -- For simplicity, we're just turning the booster off.
+        end
+    end)
+
+    -- 🔥 DEBUGGING: Check console for this message
+    print("🔧 FPS Booster button created!")
+
+    table.insert(TabContent["Discord"], fpsBoosterBtn)
+    fpsBoosterBtn.Parent = ScrollFrame
+    fpsBoosterBtn.Visible = false
 end
 
 -- ==================== TAB SWITCHING ====================
