@@ -1,5 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY (FINAL DEBUG VERSION)
+    NIGHTMARE HUB LIBRARY (FINAL DEBUG VERSION + CONFIG SYSTEM)
 ]]
 
 local NightmareHub = {}
@@ -9,7 +9,59 @@ local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- UI Variables
+-- ==================== CONFIG SAVE SYSTEM ====================
+local ConfigSystem = {}
+ConfigSystem.ConfigFile = "NightmareGui_Config.json"
+
+-- Default config (kosong, kerana config akan dibuat secara dinamik)
+ConfigSystem.DefaultConfig = {}
+
+-- Load config dari file
+function ConfigSystem:Load()
+    if isfile and isfile(self.ConfigFile) then
+        local success, result = pcall(function()
+            local fileContent = readfile(self.ConfigFile)
+            local decoded = HttpService:JSONDecode(fileContent)
+            return decoded
+        end)
+        
+        if success and result then
+            print("✅ Config loaded from file!")
+            return result
+        else
+            warn("⚠️ Failed to load config, using defaults")
+            return self.DefaultConfig
+        end
+    else
+        print("📝 No config file found, creating new one...")
+        return self.DefaultConfig
+    end
+end
+
+-- Save config ke file
+function ConfigSystem:Save(config)
+    local success, error = pcall(function()
+        local encoded = HttpService:JSONEncode(config)
+        writefile(self.ConfigFile, encoded)
+    end)
+    
+    if success then
+        -- print("💾 Config saved!") -- Uncomment untuk debug
+        return true
+    else
+        warn("❌ Failed to save config:", error)
+        return false
+    end
+end
+
+-- Update satu setting sahaja
+function ConfigSystem:UpdateSetting(config, key, value)
+    config[key] = value
+    self:Save(config)
+    -- print("🔄 Updated setting:", key, "=", value) -- Uncomment untuk debug
+end
+
+-- ==================== UI VARIABLES ====================
 local ScreenGui
 local MainFrame
 local ToggleButton
@@ -27,6 +79,9 @@ local ButtonStates = {
 
 -- ==================== CREATE UI ====================
 function NightmareHub:CreateUI()
+    -- Load config awal-awal
+    self.Config = ConfigSystem:Load()
+
     -- Cleanup
     if game.CoreGui:FindFirstChild("NightmareHubUI") then
         game.CoreGui:FindFirstChild("NightmareHubUI"):Destroy()
@@ -202,7 +257,7 @@ function NightmareHub:CreateUI()
 end
 
 -- ==================== HELPER FUNCTIONS ====================
-function NightmareHub:CreateToggleButton(text, callback)
+function NightmareHub:CreateToggleButton(text, configKey, callback)
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(1, -10, 0, 35)
     toggleBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
@@ -220,8 +275,15 @@ function NightmareHub:CreateToggleButton(text, callback)
     btnStroke.Color = Color3.fromRGB(255, 50, 50)
     btnStroke.Thickness = 1
     btnStroke.Parent = toggleBtn
-    
-    local isToggled = false
+
+    -- Muat status awal dari config
+    local isToggled = self.Config[configKey] or false
+    if isToggled then
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 30, 30)
+    end
+
+    -- Panggil callback sekali pada permulaan untuk memuat fungsi
+    if callback then callback(isToggled) end
     
     toggleBtn.MouseButton1Click:Connect(function()
         isToggled = not isToggled
@@ -231,6 +293,9 @@ function NightmareHub:CreateToggleButton(text, callback)
         else
             toggleBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
         end
+        
+        -- Simpan status baru ke config
+        ConfigSystem:UpdateSetting(self.Config, configKey, isToggled)
         
         if callback then callback(isToggled) end
     end)
@@ -313,7 +378,8 @@ end
 
 -- ==================== DYNAMIC TAB FUNCTIONS ====================
 function NightmareHub:AddMainToggle(text, callback)
-    local toggle = self:CreateToggleButton(text, callback)
+    local configKey = "Main_" .. text
+    local toggle = self:CreateToggleButton(text, configKey, callback)
     table.insert(TabContent["Main"], toggle)
     toggle.Parent = ScrollFrame
     toggle.Visible = (CurrentTab == "Main")
@@ -321,7 +387,8 @@ function NightmareHub:AddMainToggle(text, callback)
 end
 
 function NightmareHub:AddVisualToggle(text, callback)
-    local toggle = self:CreateToggleButton(text, callback)
+    local configKey = "Visual_" .. text
+    local toggle = self:CreateToggleButton(text, configKey, callback)
     table.insert(TabContent["Visual"], toggle)
     toggle.Parent = ScrollFrame
     toggle.Visible = (CurrentTab == "Visual")
@@ -329,14 +396,15 @@ function NightmareHub:AddVisualToggle(text, callback)
 end
 
 function NightmareHub:AddMiscToggle(text, callback)
-    local toggle = self:CreateToggleButton(text, callback)
+    local configKey = "Misc_" .. text
+    local toggle = self:CreateToggleButton(text, configKey, callback)
     table.insert(TabContent["Misc"], toggle)
     toggle.Parent = ScrollFrame
     toggle.Visible = (CurrentTab == "Misc")
     return toggle
 end
 
--- ==================== DISCORD TAB (FINAL DEBUG VERSION) ====================
+-- ==================== DISCORD TAB (FINAL DEBUG VERSION + CONFIG) ====================
 function NightmareHub:SetupDiscordTab()
     local Lighting = game:GetService("Lighting")
     local Terrain = workspace:FindFirstChild("Terrain")
@@ -348,7 +416,7 @@ function NightmareHub:SetupDiscordTab()
     socialSection.Parent = ScrollFrame
     socialSection.Visible = false
     
-    -- TIKTOK BUTTON
+    -- TIKTOK BUTTON (Button Biasa, tidak di-save)
     local tiktokBtn = self:CreateButton("Tiktok", function(button)
         print("🔥 Tiktok clicked")
         setclipboard("https://www.tiktok.com/@n1ghtmare.gg?_r=1&_t=ZS-91TYDcuhlRQ")
@@ -362,7 +430,7 @@ function NightmareHub:SetupDiscordTab()
     tiktokBtn.Parent = ScrollFrame
     tiktokBtn.Visible = false
     
-    -- DISCORD BUTTON
+    -- DISCORD BUTTON (Button Biasa, tidak di-save)
     local discordBtn = self:CreateButton("Discord", function(button)
         print("🔥 Discord clicked")
         setclipboard("https://discord.gg/Bcdt9nXV")
@@ -388,7 +456,7 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- JOIN SERVER BUTTON
+    -- JOIN SERVER BUTTON (Button Biasa, tidak di-save)
     local joinServerBtn = self:CreateButton("Join Server", function(button)
         if ButtonStates.joinServer then return end
         
@@ -426,7 +494,7 @@ function NightmareHub:SetupDiscordTab()
     joinServerBtn.Parent = ScrollFrame
     joinServerBtn.Visible = false
     
-    -- COPY JOB ID BUTTON
+    -- COPY JOB ID BUTTON (Button Biasa, tidak di-save)
     local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function(button)
         print("🔥 Copy Job ID clicked")
         local currentJobId = game.JobId
@@ -449,7 +517,7 @@ function NightmareHub:SetupDiscordTab()
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- SERVER HOP BUTTON
+    -- SERVER HOP BUTTON (Button Biasa, tidak di-save)
     local serverHopBtn = self:CreateButton("Server Hop", function(button)
         if ButtonStates.serverHop then return end
         
@@ -510,7 +578,7 @@ function NightmareHub:SetupDiscordTab()
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- REJOIN BUTTON
+    -- REJOIN BUTTON (Button Biasa, tidak di-save)
     local rejoinBtn = self:CreateButton("Rejoin Server", function(button)
         if ButtonStates.rejoin then return end
         
@@ -543,10 +611,9 @@ function NightmareHub:SetupDiscordTab()
     utilitySection.Parent = ScrollFrame
     utilitySection.Visible = false
     
-    -- DYNAMIC ISLAND TOGGLE
+    -- DYNAMIC ISLAND TOGGLE (Toggle dengan Config)
     print("🔧 DEBUG: Creating Dynamic Island...")
     local dynamicIslandGui = nil
-    local isDynamicIslandActive = false
     
     local function createDynamicIsland()
         if game.CoreGui:FindFirstChild("DynamicIslandGUI") then
@@ -744,8 +811,6 @@ function NightmareHub:SetupDiscordTab()
         local fps = 60
         
         game:GetService("RunService").RenderStepped:Connect(function()
-            if not isDynamicIslandActive then return end
-            
             frameCount = frameCount + 1
             local currentTime = tick()
             
@@ -769,8 +834,6 @@ function NightmareHub:SetupDiscordTab()
         -- Ping Counter
         spawn(function()
             while wait(2) do
-                if not isDynamicIslandActive then break end
-                
                 local success, ping = pcall(function()
                     return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
                 end)
@@ -793,8 +856,6 @@ function NightmareHub:SetupDiscordTab()
         -- Time Update
         spawn(function()
             while wait(1) do
-                if not isDynamicIslandActive then break end
-                
                 local time = os.date("*t")
                 timeLabel.Text = string.format("%02d:%02d", time.hour, time.min)
             end
@@ -803,13 +864,12 @@ function NightmareHub:SetupDiscordTab()
         return diScreenGui
     end
     
-    local dynamicIslandBtn = self:CreateToggleButton("Dynamic Island", function(state)
-        isDynamicIslandActive = state
-        
+    local dynamicIslandBtn = self:CreateToggleButton("Dynamic Island", "Discord_Dynamic Island", function(state)
         if state then
-            dynamicIslandGui = createDynamicIsland()
             print("✅ Dynamic Island ON")
+            dynamicIslandGui = createDynamicIsland()
         else
+            print("❌ Dynamic Island OFF")
             if dynamicIslandGui then
                 dynamicIslandGui:Destroy()
                 dynamicIslandGui = nil
@@ -817,7 +877,6 @@ function NightmareHub:SetupDiscordTab()
             if game.CoreGui:FindFirstChild("DynamicIslandGUI") then
                 game.CoreGui:FindFirstChild("DynamicIslandGUI"):Destroy()
             end
-            print("❌ Dynamic Island OFF")
         end
     end)
     table.insert(TabContent["Discord"], dynamicIslandBtn)
@@ -825,7 +884,7 @@ function NightmareHub:SetupDiscordTab()
     dynamicIslandBtn.Visible = false
     print("🔧 DEBUG: Dynamic Island button created and added.")
     
-    -- FPS BOOSTER TOGGLE
+    -- FPS BOOSTER TOGGLE (Toggle dengan Config)
     print("🔧 DEBUG: Creating FPS Booster...")
     local function removeTextures()
         print("🔧 Removing textures...")
@@ -873,7 +932,7 @@ function NightmareHub:SetupDiscordTab()
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
     end
     
-    local fpsBoosterBtn = self:CreateToggleButton("FPS Booster", function(state)
+    local fpsBoosterBtn = self:CreateToggleButton("FPS Booster", "Discord_FPS Booster", function(state)
         if state then
             print("✅ FPS Booster ON")
             removeTextures()
@@ -888,7 +947,7 @@ function NightmareHub:SetupDiscordTab()
     fpsBoosterBtn.Visible = false
     print("🔧 DEBUG: FPS Booster button created and added.")
 
-    -- AURORA VISUAL TOGGLE
+    -- AURORA VISUAL TOGGLE (Toggle dengan Config)
     print("🔧 DEBUG: Creating Aurora Visual...")
     _G.AuroraAnimation = { Active = false, Effects = {} }
 
@@ -975,7 +1034,7 @@ function NightmareHub:SetupDiscordTab()
         end)
     end
 
-    local auroraVisualBtn = self:CreateToggleButton("Aurora Visual", function(state)
+    local auroraVisualBtn = self:CreateToggleButton("Aurora Visual", "Discord_Aurora Visual", function(state)
         if state then
             print("✅ Aurora Visual ON")
             addAurora()
@@ -990,7 +1049,7 @@ function NightmareHub:SetupDiscordTab()
     print("🔧 DEBUG: Aurora Visual button created and added.")
     
     -- 🔥 CRITICAL: Force update the CanvasSize
-    task.wait(0.1) -- Wait a frame to ensure all elements are laid out
+    task.wait(0.1)
     local layout = ScrollFrame:FindFirstChildOfClass("UIListLayout")
     if layout then
         ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
