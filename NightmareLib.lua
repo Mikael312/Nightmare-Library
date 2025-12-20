@@ -1,5 +1,5 @@
 --[[
-    NIGHTMARE HUB LIBRARY (ROBUST FIX VERSION)
+    NIGHTMARE HUB LIBRARY (WITH FPS BOOSTER)
 ]]
 
 local NightmareHub = {}
@@ -337,7 +337,7 @@ function NightmareHub:AddMiscToggle(text, callback)
     return toggle
 end
 
--- ==================== DISCORD TAB (ROBUST FIX) ====================
+-- ==================== DISCORD TAB (WITH FPS BOOSTER) ====================
 function NightmareHub:SetupDiscordTab()
     -- Social Section
     local socialSection = self:CreateSection("SOCIAL")
@@ -346,7 +346,7 @@ function NightmareHub:SetupDiscordTab()
     socialSection.Visible = false
     
     -- TIKTOK BUTTON
-    local tiktokBtn = self:CreateButton("Tiktok", function(button) -- 'button' is the argument
+    local tiktokBtn = self:CreateButton("Tiktok", function(button)
         print("🔥 Tiktok clicked")
         setclipboard("https://www.tiktok.com/@n1ghtmare.gg?_r=1&_t=ZS-91TYDcuhlRQ")
         button.Text = "COPIED!"
@@ -360,7 +360,7 @@ function NightmareHub:SetupDiscordTab()
     tiktokBtn.Visible = false
     
     -- DISCORD BUTTON
-    local discordBtn = self:CreateButton("Discord", function(button) -- 'button' is the argument
+    local discordBtn = self:CreateButton("Discord", function(button)
         print("🔥 Discord clicked")
         setclipboard("https://discord.gg/Bcdt9nXV")
         button.Text = "COPIED!"
@@ -385,8 +385,8 @@ function NightmareHub:SetupDiscordTab()
     jobIdInput.Parent = ScrollFrame
     jobIdInput.Visible = false
     
-    -- 🔥 JOIN SERVER BUTTON (ROBUST FIX)
-    local joinServerBtn = self:CreateButton("Join Server", function(button) -- 'button' is the argument
+    -- JOIN SERVER BUTTON (ROBUST FIX)
+    local joinServerBtn = self:CreateButton("Join Server", function(button)
         if ButtonStates.joinServer then return end
         
         local jobId = jobIdInput.Text:gsub("%s+", "")
@@ -408,7 +408,6 @@ function NightmareHub:SetupDiscordTab()
             TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, LocalPlayer)
         end)
         
-        -- This part only runs if teleport FAILS.
         if not success then
             warn("Join Server failed: " .. tostring(errorMsg))
             button.Text = "FAILED!"
@@ -425,7 +424,7 @@ function NightmareHub:SetupDiscordTab()
     joinServerBtn.Visible = false
     
     -- COPY JOB ID BUTTON
-    local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function(button) -- 'button' is the argument
+    local copyJobIdBtn = self:CreateButton("Copy Current Job ID", function(button)
         print("🔥 Copy Job ID clicked")
         local currentJobId = game.JobId
         if currentJobId and currentJobId ~= "" then
@@ -447,15 +446,14 @@ function NightmareHub:SetupDiscordTab()
     copyJobIdBtn.Parent = ScrollFrame
     copyJobIdBtn.Visible = false
     
-    -- 🔥 SERVER HOP BUTTON (ROBUST FIX)
-    local serverHopBtn = self:CreateButton("Server Hop", function(button) -- 'button' is the argument
+    -- SERVER HOP BUTTON (ROBUST FIX)
+    local serverHopBtn = self:CreateButton("Server Hop", function(button)
         if ButtonStates.serverHop then return end
         
         ButtonStates.serverHop = true
         button.Text = "SEARCHING..."
         button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
-        -- Pass the button reference into the new thread
         task.spawn(function(btnRef)
             local servers = {}
             local cursor = ""
@@ -489,7 +487,6 @@ function NightmareHub:SetupDiscordTab()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, LocalPlayer)
                 end)
                 
-                -- This part only runs if teleport FAILS.
                 if not tpSuccess then
                     btnRef.Text = "FAILED!"
                     btnRef.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
@@ -504,14 +501,14 @@ function NightmareHub:SetupDiscordTab()
             btnRef.Text = "Server Hop"
             btnRef.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
             ButtonStates.serverHop = false
-        end, button) -- Pass the 'button' object to task.spawn
+        end, button)
     end)
     table.insert(TabContent["Discord"], serverHopBtn)
     serverHopBtn.Parent = ScrollFrame
     serverHopBtn.Visible = false
     
-    -- 🔥 REJOIN BUTTON (ROBUST FIX)
-    local rejoinBtn = self:CreateButton("Rejoin Server", function(button) -- 'button' is the argument
+    -- REJOIN BUTTON (ROBUST FIX)
+    local rejoinBtn = self:CreateButton("Rejoin Server", function(button)
         if ButtonStates.rejoin then return end
         
         ButtonStates.rejoin = true
@@ -522,7 +519,6 @@ function NightmareHub:SetupDiscordTab()
             TeleportService:Teleport(game.PlaceId, LocalPlayer)
         end)
         
-        -- This part only runs if teleport FAILS.
         if not success then
             warn("Rejoin failed: " .. tostring(errorMsg))
             button.Text = "FAILED!"
@@ -543,6 +539,80 @@ function NightmareHub:SetupDiscordTab()
     table.insert(TabContent["Discord"], utilitySection)
     utilitySection.Parent = ScrollFrame
     utilitySection.Visible = false
+    
+    -- 🔥 NEW: FPS BOOSTER TOGGLE
+    -- Define services needed for optimization functions
+    local Lighting = game:GetService("Lighting")
+    local Terrain = workspace:FindFirstChild("Terrain")
+    
+    -- Copy your functions here
+    local function removeTextures()
+        print("🔧 Removing textures...")
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("Texture") or obj:IsA("Decal") then
+                obj.Transparency = 1
+            elseif obj:IsA("MeshPart") then
+                obj.TextureID = ""
+            end
+        end
+    end
+
+    local function removeParticles()
+        print("🔧 Removing particles...")
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                obj.Enabled = false
+            end
+        end
+    end
+
+    local function applyLowGraphics()
+        print("🔧 Applying low graphics settings...")
+        
+        -- Lighting optimizations
+        if Lighting then
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.Brightness = 0
+            
+            -- Remove lighting effects
+            for _, effect in pairs(Lighting:GetChildren()) do
+                if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or 
+                   effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
+                    effect.Enabled = false
+                end
+            end
+        end
+        
+        -- Terrain optimization
+        if Terrain then
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+        end
+        
+        -- Reduce part quality
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    end
+    
+    -- Create the toggle button
+    local fpsBoosterBtn = self:CreateToggleButton("FPS Booster", function(state)
+        if state then
+            print("✅ FPS Booster ON")
+            -- Run all optimization functions
+            removeTextures()
+            removeParticles()
+            applyLowGraphics()
+        else
+            print("❌ FPS Booster OFF")
+            -- Note: Reverting these changes is complex and may require a game rejoin.
+            -- For simplicity, we're just turning the booster off.
+        end
+    end)
+    table.insert(TabContent["Discord"], fpsBoosterBtn)
+    fpsBoosterBtn.Parent = ScrollFrame
+    fpsBoosterBtn.Visible = false
     
     -- Dynamic Island Toggle (KEPT AS TOGGLE)
     local dynamicIslandGui = nil
