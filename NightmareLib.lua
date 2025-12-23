@@ -926,8 +926,7 @@ function NightmareHub:SetupDiscordTab()
             Terrain.WaterWaveSize = 0
             Terrain.WaterWaveSpeed = 0
             Terrain.WaterReflectance = 0
-            Terrain.WaterTransparency = 1
-            Terrain.Decoration = false
+            Terrain.WaterTransparency = 0
         end
         
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
